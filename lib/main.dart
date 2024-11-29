@@ -31,6 +31,7 @@ class MyHomePage extends StatefulWidget {
 class MyHomePageState extends State<MyHomePage> {
   final TextEditingController _controller = TextEditingController();
   bool _isPosting = false;
+  int _counter = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -41,25 +42,28 @@ class MyHomePageState extends State<MyHomePage> {
           children: [
             if (_isPosting) // 登校中なら表示
               const Text("投稿中..."),
-             if(!_isPosting) // そうでなければ表示
-              const Text("投稿してね!!"),
+            if (!_isPosting) // そうでなければ表示
+              Text("投稿してね!!\n $_counter 回投稿したよ！"),
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: TextField(
+                maxLines: 5,
+                minLines: 1,
                 controller: _controller,
                 decoration: const InputDecoration(
                   hintText: "ここに文字を入れてね!!",
                 ),
                 onSubmitted: (value) async {
-                   setState(() {
+                  setState(() {
                     _isPosting = true;
                   });
                   // ロギングフレームワークを使用
                   debugPrint(value);
                   final result = await postNote(value);
                   print(result);
-                   setState(() {
+                  setState(() {
                     _isPosting = false;
+                    _counter++;
                   });
                 },
               ),
@@ -67,16 +71,17 @@ class MyHomePageState extends State<MyHomePage> {
             ElevatedButton(
               onPressed: () async {
                 // ボタンが押されたときの処理
-                 setState(() {
-                    _isPosting = true;
-                  });
+                setState(() {
+                  _isPosting = true;
+                });
                 final value = _controller.text; //* controllerっていうやつから値を取得
                 debugPrint(value);
                 final result = await postNote(value);
                 print(result);
-  setState(() {
-                    _isPosting = false;
-                  });
+                setState(() {
+                  _isPosting = false;
+                  _counter++;
+                });
                 // final result = await postNote(value);
                 // debugPrint(result);
               },
