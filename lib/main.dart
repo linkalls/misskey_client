@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import "package:misskey/misskey_post.dart";
+import 'package:url_launcher/url_launcher.dart';
+import "package:misskey/gen/env.g.dart";
 
 void main() {
   runApp(const MyApp());
@@ -16,6 +18,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
+      darkTheme: ThemeData.dark(),
       home: const MyHomePage(),
       debugShowCheckedModeBanner: false,
     );
@@ -32,6 +35,7 @@ class MyHomePageState extends State<MyHomePage> {
   final TextEditingController _controller = TextEditingController();
   bool _isPosting = false;
   int _counter = 0;
+  Map<String, dynamic> _result = {}; // デフォルト値を設定
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +69,7 @@ class MyHomePageState extends State<MyHomePage> {
                     _isPosting = false;
                     _counter++;
                   });
+                  _controller.clear();
                 },
               ),
             ),
@@ -76,17 +81,33 @@ class MyHomePageState extends State<MyHomePage> {
                 });
                 final value = _controller.text; //* controllerっていうやつから値を取得
                 debugPrint(value);
-                final result = await postNote(value);
-                print(result);
+                _result = await postNote(value);
+                print(_result);
                 setState(() {
                   _isPosting = false;
                   _counter++;
+                  _result;
                 });
+                _controller.clear();
+
                 // final result = await postNote(value);
                 // debugPrint(result);
               },
               child: const Text('送信'),
             ),
+            if (_result.isNotEmpty) // 結果があれば表示
+              Column(
+                children: [
+                  SelectableText("投稿したidは${_result["createdNote"]["id"]}です"),
+                  IconButton(
+                    icon: const Icon(Icons.open_in_new),
+                    onPressed: () {
+                      launchUrl(Uri.parse(
+                          "${Env.server}/notes/${_result["createdNote"]["id"]}"));
+                    },
+                  ),
+                ],
+              ),
           ],
         ),
       ),
