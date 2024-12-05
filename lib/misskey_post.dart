@@ -2,18 +2,18 @@ import "package:dio/dio.dart";
 import "package:misskey/gen/env.g.dart";
 import "package:misskey/post_image.dart";
 
-Future<Map<String, dynamic>> postNote(String text, [file]) async {
+Future<Map<String, dynamic>> postNote(Map<String, dynamic> data) async {
   try {
-    print(file == null ? "text only" : "text and image");
+    print(data["file"] == null ? "text only" : "text and image");
     final env = Env.token;
     final server = Env.server;
     final dio = Dio();
 
-    if (file == null) {
+    if (data["file"] == null) {
       //* textのみの投稿
       final result = await dio.post("$server/api/notes/create",
           data: {
-            "text": text,
+            "text": data["text"],
           },
           options: Options(headers: {
             //* 全部がdataにかけるわけじゃないので注意
@@ -21,21 +21,21 @@ Future<Map<String, dynamic>> postNote(String text, [file]) async {
             "Content-Type": "application/json",
             // "Content-Type": "multipart/form-data",
           }));
-      print("Posted! $text");
+      print("Posted! ${data["text"]}");
       return result.data;
     } else {
-      final imageId = await postImageId(file.path);
+      final imageId = await postImageId(data["file"].path);
       print("$imageId");
       final result = await dio.post("$server/api/notes/create",
           data: {
-            "text": text,
+            "text": data["text"],
             "fileIds": [imageId],
           },
           options: Options(headers: {
             "content-type": "application/json",
             "Authorization": "Bearer $env",
           }));
-      print("Posted! $text and $imageId");
+      print("Posted! ${data["text"]} and $imageId");
       return result.data;
     }
   } catch (e) {

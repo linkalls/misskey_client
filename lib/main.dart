@@ -4,7 +4,8 @@ import "package:misskey/misskey_post.dart";
 import 'package:url_launcher/url_launcher.dart';
 import "package:misskey/gen/env.g.dart";
 import 'package:image_picker/image_picker.dart';
-import "dart:io";
+// import "dart:io";
+import 'package:flutter/foundation.dart';
 
 final ImagePicker _picker = ImagePicker();
 
@@ -77,7 +78,7 @@ class MyHomePageState extends State<MyHomePage> {
                     });
                     // ロギングフレームワークを使用
                     debugPrint(value);
-                    final result = await postNote(value);
+                    final result = await compute(postNote, {"text": value});
                     print(result);
                     setState(() {
                       _isPosting = false;
@@ -101,7 +102,10 @@ class MyHomePageState extends State<MyHomePage> {
                   final value = _controller.text; //* controllerっていうやつから値を取得
                   if (_image != null) {
                     final file = File(_image!.path);
-                    final result = await postNote(value, file);
+                    final result =
+                        await compute(postNote, {"text": value, "file": file});
+
+                    // final result = await postNote(value, file);
                     print(result);
                     setState(() {
                       _isPosting = false;
@@ -112,7 +116,7 @@ class MyHomePageState extends State<MyHomePage> {
                     return;
                   }
                   debugPrint(value);
-                  _result = await postNote(value);
+                  _result = await compute(postNote, {"text": value});
                   print(_result);
                   setState(() {
                     _isPosting = false;
@@ -127,7 +131,6 @@ class MyHomePageState extends State<MyHomePage> {
                 },
                 child: const Text('送信'),
               ),
-
               if (_image != null) // 画像があれば表示
                 Expanded(
                   child: Image.file(
